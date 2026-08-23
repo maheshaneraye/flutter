@@ -1,0 +1,100 @@
+import 'package:flutter/material.dart';
+import 'package:function_tree/function_tree.dart'; // Handles math string parsing instantly
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+  @override
+  Widget build(BuildContext context) => const MaterialApp(home: CalcExam());
+}
+
+class CalcExam extends StatefulWidget {
+  const CalcExam({super.key});
+  @override
+  State<CalcExam> createState() => _CalcExamState();
+}
+
+class _CalcExamState extends State<CalcExam> {
+  String input = "";
+  String output = "0";
+
+  // The 4x5 layout matrix stored in a simple array to loop through
+  final List<String> buttons = [
+    "C", "(", ")", "/",
+    "7", "8", "9", "*",
+    "4", "5", "6", "-",
+    "1", "2", "3", "+",
+    "0", ".", "⌫", "="
+  ];
+
+  void handleTap(String text) {
+    setState(() {
+      if (text == "C") {
+        input = "";
+        output = "0";
+      } else if (text == "⌫") {
+        if (input.isNotEmpty) input = input.substring(0, input.length - 1);
+      } else if (text == "=") {
+        try {
+          // Interprets the string mathematical expression safely
+          num result = input.interpret(); 
+          output = result.toString();
+        } catch (e) {
+          output = "Error";
+        }
+      } else {
+        input += text;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Column(
+        children: [
+          // 1. Display Screen Area
+          Expanded(
+            child: Container(
+              alignment: Alignment.bottomRight,
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(input, style: const TextStyle(color: Colors.white70, fontSize: 28)),
+                  const SizedBox(height: 10),
+                  Text(output, style: const TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+          ),
+          // 2. Interactive Input Grid
+          Expanded(
+            flex: 2,
+            child: GridView.builder(
+              padding: const EdgeInsets.all(8),
+              itemCount: buttons.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4),
+              itemBuilder: (context, i) {
+                return Container(
+                  margin: const EdgeInsets.all(6),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[850],
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    onPressed: () => handleTap(buttons[i]),
+                    child: Text(buttons[i], style: const TextStyle(color: Colors.white, fontSize: 24)),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
